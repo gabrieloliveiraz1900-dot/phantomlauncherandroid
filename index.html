@@ -1,0 +1,170 @@
+<!DOCTYPE html><html lang="pt"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<style>
+:root{--c:#00c8ff}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent;user-select:none}
+input,select{user-select:text}
+html,body{height:100%;overflow:hidden;color:#e8f6ff;font-family:system-ui,sans-serif;background:radial-gradient(ellipse at 50% 35%,#07202e,#000 70%)}
+#pages{display:flex;height:100%;overflow-x:scroll;scroll-snap-type:x mandatory;scrollbar-width:none}
+#pages::-webkit-scrollbar{display:none}
+.page{min-width:100vw;height:100%;scroll-snap-align:center;padding:12px 18px;display:flex;flex-direction:column;align-items:center;overflow-y:auto}
+.glass{background:#ffffff0d;border:1px solid #ffffff1c;border-radius:22px;backdrop-filter:blur(10px)}
+button{border:0;color:#fff;font-size:16px;border-radius:14px;padding:12px 16px;background:var(--c)}
+#gear{position:fixed;top:10px;right:12px;z-index:5;width:42px;height:42px;padding:0;border-radius:50%;background:#ffffff14;border:1px solid #ffffff2a;font-size:20px}
+#dots{position:fixed;top:22px;left:0;right:0;display:flex;justify-content:center;gap:7px;z-index:4;pointer-events:none}
+#dots i{width:7px;height:7px;border-radius:50%;background:#fff4}#dots i.on{background:var(--c)}
+#clock{font-size:54px;font-weight:200;margin-top:26px;letter-spacing:2px}
+#date{font-size:14px;opacity:.7;text-transform:capitalize}
+#orb{width:100%;flex:1;min-height:0}
+#state{font-size:12px;letter-spacing:4px;color:var(--c);margin-bottom:6px}
+#you{font-size:13px;opacity:.5;min-height:17px;text-align:center}
+#sub{font-size:17px;text-align:center;max-height:18vh;overflow:auto;margin:6px 0 12px;padding:0 6px;min-height:46px}
+.row{display:flex;gap:8px;width:100%;padding:8px;margin-bottom:6px}
+.row input{flex:1;min-width:0;background:transparent;border:0;color:#fff;font-size:16px;padding:8px;outline:0}
+.row button{padding:10px 16px;border-radius:16px}
+h2{margin:30px 0 14px;font-weight:300;letter-spacing:3px}
+#grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px 14px;width:100%}
+.ap{aspect-ratio:1;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;color:var(--c)}
+.ap img{width:100%;height:100%;object-fit:contain}
+.ap.add{border:2px dashed #ffffff40}
+#yt{width:100%;padding:24px;text-align:center;margin-top:20px;background:linear-gradient(160deg,#ff2d4d44,#ffffff08)}
+#yt img{width:84px;height:84px;margin-bottom:10px}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;justify-content:center}
+.chips div{padding:10px 16px;border-radius:20px;background:#ffffff14;border:1px solid #ffffff22}
+.ov{position:fixed;inset:0;background:#000d;z-index:10;display:none;flex-direction:column;padding:16px}
+.ov.on{display:flex}
+.sheet{margin:auto 0 0;padding:18px;background:#0b141c;border-radius:24px;border:1px solid #ffffff22;max-height:92%;overflow:auto}
+.sheet label{display:block;font-size:13px;opacity:.7;margin:12px 0 4px}
+.sheet input[type=text],.sheet input[type=password],.sheet select{width:100%;padding:12px;border-radius:12px;border:1px solid #ffffff30;background:#ffffff0d;color:#fff;font-size:16px}
+.sheet input[type=range]{width:100%}
+#pl{overflow:auto;flex:1;margin-top:10px}
+.pi{display:flex;align-items:center;gap:14px;padding:10px;border-bottom:1px solid #ffffff14}
+.pi img{width:44px;height:44px}
+</style></head><body>
+<button id="gear" onclick="openCfg()">⚙</button>
+<div id="dots"><i></i><i class="on"></i><i></i></div>
+<div id="pages">
+ <div class="page">
+  <div id="yt" class="glass"><img id="ytico"><h2 style="margin:0 0 16px">YouTube Music</h2>
+   <button onclick="A&&A.openPkg(MUS)" style="background:#ff2d4d;width:100%">Abrir app</button>
+   <div class="row glass" style="margin-top:14px"><input id="mq" placeholder="Pesquisar música..."><button onclick="music($('mq').value)" style="background:#ff2d4d">▶</button></div>
+   <div class="chips"><div onclick="music('lofi')">Lofi</div><div onclick="music('piano')">Piano</div><div onclick="music('rock')">Rock</div><div onclick="music('top portugal')">Top PT</div><div onclick="music('relaxar')">Relaxar</div><div onclick="music('treino')">Treino</div></div>
+  </div>
+ </div>
+ <div class="page">
+  <div id="clock">--:--</div><div id="date"></div><div id="bat" style="font-size:12px;opacity:.5"></div>
+  <canvas id="orb" onclick="listen()"></canvas>
+  <div id="state">PRONTO</div><div id="you"></div><div id="sub">Toca na bola e fala.</div>
+  <div class="row glass"><input id="txt" placeholder="Pede-me algo..." enterkeyhint="send"><button id="mic" onclick="listen()">🎤</button></div>
+ </div>
+ <div class="page"><h2>APPS</h2><div id="grid"></div></div>
+</div>
+
+<div class="ov" id="pk"><div class="row glass"><input id="q" placeholder="Procurar app..." oninput="plist(this.value)"><button onclick="$('pk').classList.remove('on')">✕</button></div><div id="pl"></div></div>
+
+<div class="ov" id="rm"><div class="sheet" style="text-align:center"><img id="rmi" style="width:70px"><p style="margin:12px 0">Remover esta app do ecrã?</p>
+ <button onclick="doRm()" style="background:#e03">Remover</button> <button onclick="$('rm').classList.remove('on')" style="background:#333">Cancelar</button></div></div>
+
+<div class="ov" id="cfg"><div class="sheet">
+ <h3>Definições</h3>
+ <label>Chave API da Groq</label><input type="password" id="k">
+ <label>Modelo</label><select id="m"><option>openai/gpt-oss-20b</option><option>openai/gpt-oss-120b</option></select>
+ <label>O teu nome</label><input type="text" id="nm">
+ <label>Voz</label><select id="vo"></select>
+ <label>Velocidade</label><input type="range" id="rt" min=".6" max="1.6" step=".1">
+ <label>Tom</label><input type="range" id="pt" min=".6" max="1.6" step=".1">
+ <label><input type="checkbox" id="sp"> Responder por voz</label>
+ <label>Cor da bola</label><input type="color" id="cl" style="width:100%;height:44px;border:0;background:none">
+ <div style="display:flex;gap:8px;margin-top:16px"><button onclick="speakNow('Olá, estou pronto.')" style="background:#333">Testar voz</button><button onclick="saveCfg()" style="flex:1">Guardar</button></div>
+</div></div>
+
+<script>
+const A=window.Android,$=id=>document.getElementById(id),MUS='com.google.android.apps.youtube.music';
+const L=(k,d)=>localStorage.getItem(k)??d,S=(k,v)=>localStorage.setItem(k,v);
+let apps=[],home=JSON.parse(L('apps','null')),hist=[],ICO={},st='idle',tl=0,lvl=0,col=L('col','#00c8ff'),rmI=0;
+const ico=p=>ICO[p]??(ICO[p]=A?A.getIcon(p):'');
+const all=()=>(apps.length||!A)?apps:(apps=JSON.parse(A.getApps()));
+const find=n=>{n=n.toLowerCase();const a=all();return a.find(x=>x.n.toLowerCase()==n)||a.find(x=>x.n.toLowerCase().includes(n)||n.includes(x.n.toLowerCase()))};
+function setCol(c){col=c;document.documentElement.style.setProperty('--c',c)}setCol(col);
+
+/* ---- apps ---- */
+if(!home){home=['WhatsApp','Instagram','Chrome','Câmara','Definições','Discord','Mapas','Gmail'].map(find).filter(Boolean).map(a=>({n:a.n,p:a.p}));S('apps',JSON.stringify(home))}
+function grid(){
+ $('grid').innerHTML=home.map((a,i)=>`<div class="ap" data-i="${i}"><img src="${ico(a.p)}"></div>`).join('')+'<div class="ap add" id="add">＋</div>';
+ document.querySelectorAll('.ap[data-i]').forEach(e=>{let t,lp;const i=+e.dataset.i;
+  e.ontouchstart=()=>{lp=0;t=setTimeout(()=>{lp=1;rmI=i;$('rmi').src=ico(home[i].p);$('rm').classList.add('on')},550)};
+  e.ontouchmove=e.ontouchend=()=>clearTimeout(t);
+  e.onclick=()=>{if(!lp&&A)A.openPkg(home[i].p)}});
+ $('add').onclick=()=>{$('pk').classList.add('on');$('q').value='';plist('')};
+}
+function plist(q){q=q.toLowerCase();$('pl').innerHTML=all().filter(a=>a.n.toLowerCase().includes(q)).map(a=>`<div class="pi" data-p="${a.p}" data-n="${a.n}"><img src="${ico(a.p)}"><span>${a.n}</span></div>`).join('')}
+$('pl').onclick=e=>{const d=e.target.closest('.pi');if(!d)return;if(!home.some(a=>a.p==d.dataset.p)){home.push({n:d.dataset.n,p:d.dataset.p});S('apps',JSON.stringify(home))}$('pk').classList.remove('on');grid()};
+function doRm(){home.splice(rmI,1);S('apps',JSON.stringify(home));$('rm').classList.remove('on');grid()}
+function openByName(n){const a=find(n);if(a&&A)A.openPkg(a.p);else say('Não encontrei a app '+n)}
+function music(q){q=(q||'').trim();if(q&&A)A.openUrl('https://music.youtube.com/search?q='+encodeURIComponent(q),MUS)}
+
+/* ---- definições ---- */
+function openCfg(){
+ $('k').value=L('gk','');$('m').value=L('model','openai/gpt-oss-20b');$('nm').value=L('name','');
+ $('rt').value=L('rate',1);$('pt').value=L('pitch',1);$('sp').checked=L('sp','1')=='1';$('cl').value=col;
+ const v=A?JSON.parse(A.voices()):[];$('vo').innerHTML=v.map(x=>`<option>${x}</option>`).join('')||'<option value="">padrão</option>';$('vo').value=L('voice','');
+ $('cfg').classList.add('on')}
+function saveCfg(){S('gk',$('k').value.trim());S('model',$('m').value);S('name',$('nm').value.trim());S('voice',$('vo').value);S('rate',$('rt').value);S('pitch',$('pt').value);S('sp',$('sp').checked?'1':'0');S('col',$('cl').value);setCol($('cl').value);$('cfg').classList.remove('on')}
+
+/* ---- voz e IA ---- */
+const setSt=s=>{st=s;$('state').textContent={idle:'PRONTO',listen:'A OUVIR',think:'A PENSAR',speak:'A FALAR'}[s]};
+function listen(){if(!A)return;if(st=='listen'){A.stopListen();setSt('idle');return}A.stopSpeak();setSt('listen');A.listen()}
+function onRms(v){if(st=='listen')tl=Math.max(0,Math.min(1,(v+2)/10))}
+function onVoice(t){if(t)ask(t);else{setSt('idle');$('sub').textContent='Não percebi, tenta outra vez.'}}
+function onSpeak(b){setSt(b?'speak':'idle')}
+function speakNow(t){if(A)A.speak(t.replace(/[!+*`#_~<>|\\\[\]{}^=]/g,' '),L('voice',''),+L('rate',1),+L('pitch',1))}
+function say(t){$('sub').textContent=t;if(L('sp','1')=='1'&&A)speakNow(t);else setSt('idle')}
+$('txt').onkeydown=e=>{if(e.key=='Enter'){ask($('txt').value);$('txt').blur()}};
+async function ask(q){
+ q=(q||'').trim();if(!q)return;$('txt').value='';$('you').textContent='“'+q+'”';
+ const k=L('gk','');if(!k){say('Mete primeiro a chave da Groq nas definições.');openCfg();return}
+ setSt('think');hist.push({role:'user',content:q});hist=hist.slice(-10);
+ const sys=`Tu és o JARVIS, assistente de ${L('name','')||'o utilizador'} num telemóvel Android. Agora: ${new Date().toLocaleString('pt-PT')}. Responde em português de Portugal, curto e natural. Responde SEMPRE em JSON: {"say":"o que dizes","open":"nome da app a abrir ou vazio","url":"link a abrir ou vazio","music":"música ou artista para tocar no YouTube Music ou vazio","torch":"on, off ou vazio"}. Apps do utilizador: ${home.map(a=>a.n).join(', ')}. Podes abrir qualquer app instalada pelo nome.`;
+ try{
+  const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+k},
+   body:JSON.stringify({model:L('model','openai/gpt-oss-20b'),response_format:{type:'json_object'},messages:[{role:'system',content:sys},...hist]})});
+  const d=await r.json();if(d.error)throw new Error(d.error.message);
+  const j=JSON.parse(d.choices[0].message.content);hist.push({role:'assistant',content:j.say||''});
+  say(j.say||'Feito.');
+  setTimeout(()=>{if(j.open)openByName(j.open);if(j.url&&A)A.openUrl(j.url,'');if(j.music)music(j.music);if(j.torch&&A)A.torch(j.torch=='on')},1200);
+ }catch(e){setSt('idle');$('sub').textContent='Erro: '+e.message}
+}
+
+/* ---- relógio ---- */
+function tick(){const d=new Date();$('clock').textContent=d.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});$('date').textContent=d.toLocaleDateString('pt-PT',{weekday:'long',day:'numeric',month:'long'});if(A)$('bat').textContent='🔋 '+A.battery()+'%'}
+tick();setInterval(tick,15000);
+
+/* ---- bola JARVIS ---- */
+const cv=$('orb'),cx=cv.getContext('2d'),N=460,P=[];let W,H,rot=0;
+for(let i=0;i<N;i++){const y=1-2*(i+.5)/N,r=Math.sqrt(1-y*y),a=i*2.39996;P.push([Math.cos(a)*r,y,Math.sin(a)*r])}
+function size(){const d=devicePixelRatio||1;W=cv.clientWidth;H=cv.clientHeight;cv.width=W*d;cv.height=H*d;cx.setTransform(d,0,0,d,0,0)}
+addEventListener('resize',size);
+const SC={idle:'',listen:'#3dff9a',think:'#ffb020',speak:''};
+function frame(t){
+ if(st=='speak')tl=.35+.45*Math.abs(Math.sin(t/120)*Math.sin(t/310));else if(st=='think')tl=.3;else if(st=='idle')tl=.04;
+ lvl+=(tl-lvl)*.14;rot+=({idle:.004,listen:.012,think:.035,speak:.014})[st];
+ const c=SC[st]||col,R=Math.min(W,H)*.32*(1+lvl*.22),X=W/2,Y=H/2;
+ cx.clearRect(0,0,W,H);cx.fillStyle=c;
+ for(let k=4;k>0;k--){cx.globalAlpha=.035*(1+lvl*2);cx.beginPath();cx.arc(X,Y,R*(1+k*.14),0,7);cx.fill()}
+ const cs=Math.cos(rot),sn=Math.sin(rot),ct=.9,stl=.44;
+ for(let i=0;i<N;i++){const p=P[i],w=1+lvl*.16*Math.sin(i*.7+t/90);
+  const x1=(p[0]*cs+p[2]*sn)*w,z1=(-p[0]*sn+p[2]*cs)*w,y1=p[1]*w,
+        y2=y1*ct-z1*stl,z2=y1*stl+z1*ct,k=1.7/(2.7-z2);
+  cx.globalAlpha=.25+.6*(z2+1)/2;cx.beginPath();cx.arc(X+x1*R*k,Y+y2*R*k,(.9+z2*.8+lvl*1.2)*k,0,7);cx.fill()}
+ cx.strokeStyle=c;cx.lineWidth=1.4;
+ for(let j=0;j<3;j++){cx.globalAlpha=.35+lvl*.4;cx.beginPath();cx.ellipse(X,Y,R*1.32,R*1.32*Math.abs(Math.sin(t/2600+j*1.05)),rot*(j%2?-2:2)+j,0,7);cx.stroke()}
+ cx.globalAlpha=.9;cx.beginPath();cx.arc(X,Y,R*.18*(1+lvl),0,7);cx.fill();
+ requestAnimationFrame(frame)}
+setTimeout(()=>{size();requestAnimationFrame(frame)},50);
+
+/* ---- páginas ---- */
+const pg=$('pages');setTimeout(()=>{pg.scrollLeft=innerWidth},0);
+pg.onscroll=()=>{const i=Math.round(pg.scrollLeft/innerWidth);document.querySelectorAll('#dots i').forEach((d,j)=>d.classList.toggle('on',i==j))};
+$('ytico').src=ico(MUS)||'';grid();
+if(!L('gk',''))setTimeout(openCfg,600);
+</script></body></html>
